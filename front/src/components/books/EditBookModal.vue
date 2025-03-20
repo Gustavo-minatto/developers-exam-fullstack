@@ -3,23 +3,25 @@
     <div class="modal-content">
       <h3>Editar Livro</h3>
       <form @submit.prevent="saveChanges">
-        <div>
+        <div class="content">
           <label for="title">Título:</label>
           <input v-model="editedBook.title" type="text" id="title" required />
         </div>
 
-        <div>
+        <div class="content">
           <label for="author">Autor:</label>
           <input v-model="editedBook.author" type="text" id="author" required />
         </div>
 
-        <div>
+        <div class="content">
           <label for="description">Descrição:</label>
           <textarea v-model="editedBook.description" id="description" required></textarea>
         </div>
 
-        <button type="submit">Salvar Alterações</button>
-        <button type="button" @click="closeEditModal">Fechar</button>
+        <div class="button-area">
+          <button type="submit">Salvar Alterações</button>
+          <button type="button" @click="closeEditModal">Fechar</button>
+        </div>
       </form>
     </div>
   </div>
@@ -48,7 +50,7 @@ export default {
     },
     saveChanges() {
       this.$emit("save-changes", this.editedBook);
-      this.closeEditModal();
+      this.$emit("close-modal");
     }
   }
 }
@@ -84,8 +86,12 @@ export default {
 .modal-content textarea {
   margin-bottom: 10px;
   padding: 8px;
-  border: 1px solid ;
+  border: 1px solid #0c66a3;
   border-radius: 5px;
+}
+
+.button-area {
+  display: flex;
 }
 
 .modal-content button {
@@ -96,6 +102,7 @@ export default {
   border-radius: 5px;
   cursor: pointer;
   margin-right: 5px;
+  width: 100%;
 }
 
 .modal-content button:hover {
@@ -108,5 +115,10 @@ export default {
 
 .modal-content button:nth-child(2):hover {
   background-color: #d32f2f;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
 }
 </style>

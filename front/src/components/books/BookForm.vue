@@ -1,32 +1,31 @@
 <template>
-  <h1>Lista de Livros</h1>
   <div class="book-form">
-    <div class="content">
-      <h2>Cadastrar Livro</h2>
+    <h2>Cadastrar Livro</h2>
+    <form @submit.prevent="submitBook">
+      <div class="content">
+        <label for="title">Título:</label>
+        <input v-model="book.title" type="text" id="title" required />
+        <div v-if="titleError" class="error-message">{{ titleError }}</div>
+      </div>
 
-      <form @submit.prevent="submitBook">
-        <div class="cadastro">
-          <label for="title">Título:</label>
-          <input v-model="book.title" type="text" id="title" required placeholder="Ex: O Senhor dos Anéis" />
-          <div v-if="titleError" class="error-message">{{ titleError }}</div>
-        </div>
+      <div class="content">
+        <label for="author">Autor:</label>
+        <input v-model="book.author" type="text" id="author" required />
+        <div v-if="authorError" class="error-message">{{ authorError }}</div>
+      </div>
 
-        <div class="cadastro">
-          <label for="author">Autor:</label>
-          <input v-model="book.author" type="text" id="author" required placeholder="Ex: J.R.R. Tolkien" />
-          <div v-if="authorError" class="error-message">{{ authorError }}</div>
-        </div>
+      <div class="content">
+        <label for="description">Descrição:</label>
+        <textarea v-model="book.description" id="description" required></textarea>
+        <div v-if="descriptionError" class="error-message">{{ descriptionError }}</div>
+      </div>
 
-        <div class="cadastro">
-          <label for="description">Descrição:</label>
-          <textarea v-model="book.description" id="description" required
-            placeholder="Ex: Uma história épica de fantasia."></textarea>
-          <div v-if="descriptionError" class="error-message">{{ descriptionError }}</div>
-        </div>
+      <button type="submit" :disabled="isSendingEmail">Cadastrar</button>
 
-        <button type="submit" :disabled="isSendingEmail">Cadastrar</button>
-      </form>
-    </div>
+      <div v-if="isSendingEmail" class="loading-message">Enviando e-mail...</div>
+      <div v-if="emailSent" class="success-message">E-mail enviado com sucesso!</div>
+      <div v-if="emailError" class="error-message">{{ emailError }}</div>
+    </form>
   </div>
 </template>
 
@@ -35,69 +34,76 @@ export default {
   data() {
     return {
       book: {
+        id: '',
         title: '',
         author: '',
         description: ''
       },
-      books: JSON.parse(localStorage.getItem('books')) || [],
       titleError: null,
       authorError: null,
       descriptionError: null,
-      isSendingEmail: false,
-      emailSent: false
+      emailSent: false,
+      emailError: null,
+      isSendingEmail: false
     };
   },
   methods: {
     submitBook() {
-      if (this.isTitleDuplicated()) {
-        this.titleError = "Este título já foi cadastrado!";
+      if (this.isTitleDuplicate(this.book.title)) {
+        this.titleError = 'O título do livro já existe.';
         return;
+      } else {
+        this.titleError = null;
       }
 
-      if (!this.isTitleValid()) {
-        this.titleError = "O título deve ter entre 10 e 100 caracteres!";
+      if (this.book.title.length < 10 || this.book.title.length > 100) {
+        this.titleError = 'O título deve ter entre 10 e 100 caracteres.';
         return;
+      } else {
+        this.titleError = null;
       }
 
-      if (!this.isAuthorValid()) {
-        this.authorError = "O autor deve ter entre 10 e 100 caracteres!";
+      if (this.book.author.length < 10 || this.book.author.length > 100) {
+        this.authorError = 'O autor deve ter entre 10 e 100 caracteres.';
         return;
+      } else {
+        this.authorError = null;
       }
 
-      if (!this.isDescriptionValid()) {
-        this.descriptionError = "A descrição deve ter no máximo 1024 caracteres!";
+      if (this.book.description.length > 1024) {
+        this.descriptionError = 'A descrição não pode ter mais de 1024 caracteres.';
         return;
+      } else {
+        this.descriptionError = null;
       }
 
-      this.books.push(this.book);
+      this.book.id = this.generateUniqueId();
 
-      localStorage.setItem('books', JSON.stringify(this.books));
+      this.$emit('add-book', this.book);
 
       this.sendEmailNotification(this.book);
 
+      console.log('Livro adicionado:', JSON.stringify(this.book, null, 2));
+
       this.resetForm();
-    },
-    isTitleDuplicated() {
-      return this.books.some(book => book.title === this.book.title);
-    },
-    isTitleValid() {
-      return this.book.title.length >= 10 && this.book.title.length <= 100;
-    },
-    isAuthorValid() {
-      return this.book.author.length >= 10 && this.book.author.length <= 100;
-    },
-    isDescriptionValid() {
-      return this.book.description.length <= 1024;
     },
     resetForm() {
       this.book = { title: '', author: '', description: '' };
-      this.titleError = null;
-      this.authorError = null;
-      this.descriptionError = null;
+    },
+    isTitleDuplicate(title) {
+      const existingBooks = [
+        { title: 'O Senhor dos Anéis' },
+        { title: '1984' }
+      ];
+      return existingBooks.some(book => book.title === title);
+    },
+    generateUniqueId() {
+      return `book-${Date.now()}`;
     },
     async sendEmailNotification(book) {
       this.isSendingEmail = true;
       this.emailSent = false;
+      this.emailError = null;
 
       try {
         const response = await fetch('https://api.example.com/send-email', {
@@ -163,10 +169,7 @@ textarea {
 
 textarea {
   width: 400px;
-  max-width: 100%;  
-  @media (max-width: 800px) {
-    width: auto;
-  }
+  max-width: 100%;
 }
 
 button {
@@ -188,12 +191,7 @@ button:hover {
 form {
   display: flex;
   align-items: center;
-
   gap: 10px;
-
-  @media (max-width: 800px) {
-    flex-direction: column;
-  }
 }
 
 .error-message {
@@ -202,5 +200,8 @@ form {
   margin-top: 5px;
 }
 
-@media (max-width: 800px) {}
+.content {
+  display: flex;
+  flex-direction: column;
+}
 </style>

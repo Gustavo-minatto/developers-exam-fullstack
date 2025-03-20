@@ -40,7 +40,7 @@ export default {
   },
   data() {
     return {
-      books: JSON.parse(localStorage.getItem('books')) || [],
+      books: [],
       error: null,
       loading: false,
       isModalOpen: false,
@@ -59,20 +59,14 @@ export default {
       const index = this.books.findIndex(book => book.id === updatedBook.id);
       if (index !== -1) {
         this.books.splice(index, 1, updatedBook);
-        this.saveBooksToLocalStorage();
       }
       this.closeModal();
     },
     deleteBook(bookId) {
       this.books = this.books.filter(book => book.id !== bookId);
-      this.saveBooksToLocalStorage();
     },
     addBook(book) {
       this.books.push(book);
-      this.saveBooksToLocalStorage();
-    },
-    saveBooksToLocalStorage() {
-      localStorage.setItem('books', JSON.stringify(this.books));
     }
   }
 };
@@ -105,5 +99,10 @@ h1 {
   color: red;
   text-align: center;
   padding: 1rem;
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
 }
 </style>

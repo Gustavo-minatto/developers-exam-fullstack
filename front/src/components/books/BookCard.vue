@@ -37,16 +37,19 @@ export default {
       this.isModalOpen = true;
     },
     closeEditModal() {
-      this.isModalOpen = false;
+      this.isModalOpen = false; // Fechar o modal
     },
     saveChanges(updatedBook) {
       this.$emit('edit-book', updatedBook);
-      this.closeEditModal();
+      this.closeEditModal(); // Fechar o modal imediatamente após salvar
     },
-
+    deleteBook() {
+      this.$emit('delete-book', this.book.id);
+    }
   }
 }
 </script>
+
 
 <style scoped>
 .book-card {
