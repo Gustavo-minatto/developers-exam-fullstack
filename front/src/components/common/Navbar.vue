@@ -13,8 +13,12 @@
   color: white;
 }
 
+h2 {
+  margin: 20px;
+}
+
 .navbar-brand h1 {
   margin: 0;
   font-size: 1.5rem;
 }
-</style> 
+</style>
